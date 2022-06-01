@@ -8,7 +8,7 @@ from typing import Tuple
 
 import ddddocr
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver import Edge as Browser
+from selenium.webdriver import Edge as Browser, EdgeOptions as Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver, WebElement
@@ -256,11 +256,18 @@ def report(sleep=True):
             time.sleep(random.randint(60, 600))
             print(f"现在时间是：{datetime.datetime.now()}，开始打卡")
 
+        options = Options()
+        options
+        options.add_argument(
+            "--user-data-dir=" + r"C:\Users\nico\AppData\Local\Microsoft\Edge\User Data"
+        )
         if os.path.exists("./msedgedriver.exe"):
-            driver: WebDriver = Browser(executable_path="./msedgedriver.exe")
+            driver: WebDriver = Browser(
+                executable_path="./msedgedriver.exe", options=options
+            )
         else:
             driver: WebDriver = Browser(
-                executable_path=r"F:\Downloads\msedgedriver.exe"
+                executable_path=r"F:\Downloads\msedgedriver.exe", options=options
             )
 
         cookies_exist_flag = check_cookies_exist(driver, user)

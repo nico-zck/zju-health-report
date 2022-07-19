@@ -4,17 +4,19 @@ import json
 import os
 import random
 import time
+from pathlib import Path
 from typing import Tuple
 
 import ddddocr
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from selenium.webdriver import Edge as Browser, EdgeOptions as Options
+
+# from selenium.webdriver import Edge as Browser, EdgeOptions as Options
+from selenium.webdriver import Chrome as Browser, ChromeOptions as Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.command import Command
 from selenium.webdriver.remote.webdriver import WebDriver, WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-
 
 from users import USERS
 
@@ -137,10 +139,6 @@ def checkin(driver: WebDriver, user: dict) -> Tuple[bool, str]:
         find_and_click_by_xpath(
             driver, "//div[@name='sfcxzysx']/descendant::span[contains(.,'否 No')]"
         )
-        # 选择校区
-        find_and_click_by_xpath(
-            driver, "//div[@name='campus']/descendant::span[contains(.,'玉泉校区')]"
-        )
         # 是否已经申领校区所在地健康码
         find_and_click_by_xpath(
             driver, "//div[@name='sfsqhzjkk']/descendant::span[contains(.,'是 Yes')]"
@@ -153,6 +151,14 @@ def checkin(driver: WebDriver, user: dict) -> Tuple[bool, str]:
         # 是否在校
         find_and_click_by_xpath(
             driver, "//div[@name='sfzx']/descendant::span[contains(.,'是 Yes')]"
+        )
+        # 所在校区
+        find_and_click_by_xpath(
+            driver, "//div[@name='campus']/descendant::span[contains(.,'玉泉')]"
+        )
+        # 是否实习
+        find_and_click_by_xpath(
+            driver, "//div[@name='internship']/descendant::span[contains(.,'否 No')]"
         )
         # 所在地点
         find_and_click_by_xpath(
@@ -257,18 +263,10 @@ def report(sleep=True):
             print(f"现在时间是：{datetime.datetime.now()}，开始打卡")
 
         options = Options()
-        options
-        options.add_argument(
-            "--user-data-dir=" + r"C:\Users\nico\AppData\Local\Microsoft\Edge\User Data"
+        options.add_argument(f"user-data-dir={Path().absolute() / 'selenium'}")
+        driver: WebDriver = Browser(
+            executable_path="./chromedriver.exe", options=options
         )
-        if os.path.exists("./msedgedriver.exe"):
-            driver: WebDriver = Browser(
-                executable_path="./msedgedriver.exe", options=options
-            )
-        else:
-            driver: WebDriver = Browser(
-                executable_path=r"F:\Downloads\msedgedriver.exe", options=options
-            )
 
         cookies_exist_flag = check_cookies_exist(driver, user)
         if cookies_exist_flag:
@@ -286,6 +284,8 @@ def report(sleep=True):
         if cookies_exist_flag and cookies_valid_flag:
             cookies_state = "load from old cookies"
         else:
+            driver.delete_all_cookies()
+            time.sleep(3)
             driver.get("https://healthreport.zju.edu.cn/ncov/wap/default/index")
             login(driver, user)
             save_cookies(driver, user)
